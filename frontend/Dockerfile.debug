@@ -1,0 +1,15 @@
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN echo "=== Listing root ===" && ls -la
+RUN echo "=== Listing src ===" && ls -la src || echo "src not found"
+RUN echo "=== Listing src/components ===" && ls -la src/components || echo "src/components not found"
+RUN echo "=== Listing src/contexts ===" && ls -la src/contexts || echo "src/contexts not found"
+RUN echo "=== Listing src/lib ===" && ls -la src/lib || echo "src/lib not found"
+RUN echo "=== tsconfig.json ===" && cat tsconfig.json || echo "tsconfig.json not found"

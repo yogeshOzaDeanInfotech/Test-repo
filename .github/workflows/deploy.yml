@@ -1,4 +1,4 @@
-name: Frontend CI/CD
+name: Deploy Application
 
 on:
   push:
@@ -10,8 +10,36 @@ env:
   EC2_PROJECT_PATH: ~/deployment
 
 jobs:
-  build-and-push:
-    name: Build & Push Frontend Image
+  build-and-push-backend:
+    name: Build & Push Backend Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - user-service
+          - worksheet-service
+          - payment-service
+          - notification-service
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Backend Service
+        run: |
+          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-${{ matrix.service }}:latest
+          docker build -t $IMAGE_NAME ./backend/${{ matrix.service }}
+          docker push $IMAGE_NAME
+
+  build-and-push-frontend:
+    name: Build & Push Frontend
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +52,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push
+      - name: Build & Push Frontend
         run: |
           IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-frontend:latest
           docker build -t $IMAGE_NAME ./frontend
@@ -32,7 +60,7 @@ jobs:
 
   deploy:
     name: Deploy to EC2
-    needs: build-and-push
+    needs: [build-and-push-backend, build-and-push-frontend]
     runs-on: ubuntu-latest
 
     steps:
@@ -53,5 +81,7 @@ jobs:
           script: |
             cd $EC2_PROJECT_PATH || exit 1
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            df -h
+            docker compose down
             docker compose pull
             docker compose up -d

@@ -44,7 +44,12 @@ const validateToken = (req, res, next) => {
 
 app.use(express.json());
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ 
+  origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:4005', 'http://localhost:3001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.get('/health', (req, res) => {
   res.json({

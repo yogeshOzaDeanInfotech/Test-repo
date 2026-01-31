@@ -86,7 +86,7 @@ services:
       - test-network
 
   frontend:
-    image: yogeshoza33333/fractal-frontend:latest
+    image: yogeshoza33333/test-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

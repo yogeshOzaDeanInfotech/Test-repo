@@ -26,7 +26,7 @@ jobs:
 
       - name: Build & Push
         run: |
-          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/fractal-frontend:latest
+          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-frontend:latest
           docker build -t $IMAGE_NAME ./frontend
           docker push $IMAGE_NAME
 
@@ -51,9 +51,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,EC2_PROJECT_PATH
           script: |
+            cd $EC2_PROJECT_PATH || exit 1
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker pull $DOCKERHUB_USERNAME/fractal-frontend:latest
-            if [ "$(docker ps -aq -f name=fractal-frontend)" ]; then
-              docker rm -f fractal-frontend
-            fi
-            docker run -d --name fractal-frontend -p 4005:3000 --restart unless-stopped $DOCKERHUB_USERNAME/fractal-frontend:latest
+            docker compose pull
+            docker compose up -d

@@ -52,19 +52,14 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           EC2_PROJECT_PATH: ${{ env.EC2_PROJECT_PATH }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,JWT_SECRET,EC2_PROJECT_PATH
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,EC2_PROJECT_PATH
           script: |
             cd $EC2_PROJECT_PATH || exit 1
-            git pull origin ${{ github.ref_name }} || true
-            echo "DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" > .env.deploy
-            echo "JWT_SECRET=$JWT_SECRET" >> .env.deploy
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker compose -f docker-compose.prod.yml --env-file .env.deploy pull
-            docker compose -f docker-compose.prod.yml --env-file .env.deploy up -d
-            rm -f .env.deploy
+            docker compose pull
+            docker compose up -d

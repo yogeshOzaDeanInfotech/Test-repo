@@ -91,11 +91,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://54.152.26.121:3000
     container_name: test-frontend
     ports:
       - "4005:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://54.152.26.121:3000
     depends_on:
       - api-gateway
     networks:

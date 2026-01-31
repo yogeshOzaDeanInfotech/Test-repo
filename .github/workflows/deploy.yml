@@ -55,7 +55,11 @@ jobs:
       - name: Build & Push Frontend
         run: |
           IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-frontend:latest
-          docker build --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} -t $IMAGE_NAME ./frontend
+          API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          if [ -z "$API_URL" ]; then
+            API_URL="http://54.152.26.121:3000"
+          fi
+          docker build --build-arg NEXT_PUBLIC_API_URL=$API_URL -t $IMAGE_NAME ./frontend
           docker push $IMAGE_NAME
 
   deploy:
@@ -75,14 +79,33 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           EC2_PROJECT_PATH: ${{ env.EC2_PROJECT_PATH }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,EC2_PROJECT_PATH
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,EC2_PROJECT_PATH,GITHUB_REPO,GITHUB_BRANCH
           script: |
-            cd $HOME/$EC2_PROJECT_PATH || exit 1
+            # Create deployment directory if it doesn't exist
+            if [ ! -d "$HOME/$EC2_PROJECT_PATH" ]; then
+              echo "Cloning repository..."
+              cd $HOME
+              git clone https://github.com/$GITHUB_REPO.git $EC2_PROJECT_PATH
+              cd $EC2_PROJECT_PATH
+            else
+              cd $HOME/$EC2_PROJECT_PATH
+              git fetch origin
+              git reset --hard origin/$GITHUB_BRANCH
+            fi
+            
+            # Login to Docker Hub
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            
+            # Deploy
             docker compose down
             docker compose pull
             docker compose up -d
+            
+            # Show status
+            docker compose ps

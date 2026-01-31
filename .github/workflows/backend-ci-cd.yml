@@ -34,7 +34,7 @@ jobs:
 
       - name: Build & Push
         run: |
-          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
+          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-${{ matrix.service }}:latest
           docker build -t $IMAGE_NAME ./backend/${{ matrix.service }}
           docker push $IMAGE_NAME
 

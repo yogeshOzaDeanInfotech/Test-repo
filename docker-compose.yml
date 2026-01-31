@@ -1,6 +1,6 @@
 services:
   api-gateway:
-    image: yogeshoza33333/api-gateway:latest
+    image: yogeshoza33333/test-api-gateway:latest
     build:
       context: ./backend/api-gateway
       dockerfile: Dockerfile
@@ -25,7 +25,7 @@ services:
       - test-network
 
   user-service:
-    image: yogeshoza33333/user-service:latest
+    image: yogeshoza33333/test-user-service:latest
     build:
       context: ./backend/user-service
       dockerfile: Dockerfile
@@ -41,7 +41,7 @@ services:
       - test-network
 
   worksheet-service:
-    image: yogeshoza33333/worksheet-service:latest
+    image: yogeshoza33333/test-worksheet-service:latest
     build:
       context: ./backend/worksheet-service
       dockerfile: Dockerfile
@@ -57,7 +57,7 @@ services:
       - test-network
 
   payment-service:
-    image: yogeshoza33333/payment-service:latest
+    image: yogeshoza33333/test-payment-service:latest
     build:
       context: ./backend/payment-service
       dockerfile: Dockerfile
@@ -72,7 +72,7 @@ services:
       - test-network
 
   notification-service:
-    image: yogeshoza33333/notification-service:latest
+    image: yogeshoza33333/test-notification-service:latest
     build:
       context: ./backend/notification-service
       dockerfile: Dockerfile

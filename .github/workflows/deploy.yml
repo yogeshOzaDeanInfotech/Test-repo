@@ -55,7 +55,7 @@ jobs:
       - name: Build & Push Frontend
         run: |
           IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/test-frontend:latest
-          docker build -t $IMAGE_NAME ./frontend
+          docker build --build-arg NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} -t $IMAGE_NAME ./frontend
           docker push $IMAGE_NAME
 
   deploy:
